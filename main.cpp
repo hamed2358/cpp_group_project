@@ -8,7 +8,7 @@ int main()
 
     // Open the supplied video file.
 
-    cv::VideoCapture video("resources/test_video_fixed.mp4");
+    cv::VideoCapture video(0);
 
     if (!video.isOpened()) {
 
