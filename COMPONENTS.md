@@ -1,197 +1,210 @@
 # Audio Controller – Components
 
-A – CameraInput → Hämtar kamerabilden  
-B – MarkerDetector → Hittar markern  
-C – MarkerRecognizer → Känner igen markern  
-D – PoseEstimator → Beräknar position och rotation  
-E – AudioController → Styr ljud, pitch och volym
+A – CameraInput → Fetches the camera image  
+B – MarkerDetector → Finds the marker candidates   
+C – MarkerRecognizer → Recognises the marker  
+D – PoseEstimator → Calculates position and rotation  
+E – AudioController → Controls audio, pitch, and volume
+## Table for components
+| Component | Responsibility | Input | Output | Primary owner | First evidence |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| CameraInput | Fetches the camera image | Device / video | `cv::Mat` (valid frame) | `Hamed` | Saved frame |
+| MarkerDetector | Finds the marker candidates | `cv::Mat` (camera image) | Square + 4 corners | `Hamed` | Debug overlay |
+| MarkerRecognizer | Recognises the marker and orientation | Square + corners | Approved marker + orientation | `Jonathan` | Pattern match test |
+| PoseEstimator | Calculates position and rotation | Approved marker + corners | Position + rotation | `Abdulmajid` | Pose coordinates |
+| AudioController | Controls audio, pitch, and volume | Position + rotation + visibility | Play/stop + pitch + volume | `Ali` | Audio output change |
 ## Component Responsibilities
 ### A – CameraInput
 
-**Beskrivning:**  
+**Description:**  
 
-CameraInput är den första delen av programmet och ansvarar för kontakten med kameran. Komponenten ska öppna kameran, läsa in nya kamerabilder (frames) och kontrollera att bilderna är giltiga. När en fungerande bild har hämtats skickas den vidare till nästa komponent för fortsatt behandling. Om kameran inte kan öppnas eller en bild inte kan läsas ska komponenten kunna upptäcka detta och rapportera problemet.
+CameraInput is the first part of the program and is responsible for communication with the camera. The component must open the camera, read new camera frames, and verify that the images are valid. Once a working image has been retrieved, it is passed on to the next component for further processing. If the camera cannot be opened or an image cannot be read, the component must be able to detect this and report the issue.
 
-**Samarbete:**  
+**Collaboration:**  
 
-CameraInput samarbetar främst med MarkerDetector. CameraInput levererar kamerabilden och MarkerDetector använder bilden för att börja leta efter markern. Personen som ansvarar för CameraInput behöver därför komma överens med MarkerDetector-ansvarig om hur bilden ska lämnas vidare mellan komponenterna.
+CameraInput primarily collaborates with MarkerDetector. CameraInput delivers the camera image, and MarkerDetector uses the image to start searching for the marker. The person responsible for CameraInput therefore needs to agree with the MarkerDetector owner on how the image should be passed between the components.
 
-**Ska inte göra:**  
+**Should not do:**  
 
-CameraInput ska inte leta efter fyrkanter, känna igen markern, beräkna markerens position/rotation eller styra ljudet. Dess ansvar slutar när en fungerande kamerabild har lämnats vidare.
+CameraInput must not search for squares, recognise the marker, calculate the marker's position/rotation, or control the audio. Its responsibility ends once a working camera image has been passed on.
 
-**Filer:**  
+**Files:**  
 
-CameraInput.hpp – komponentens interface, alltså vad andra delar av programmet kan använda.  
+CameraInput.hpp – the component's interface, i.e., what other parts of the program can use.  
 
-CameraInput.cpp – själva implementationen som öppnar kameran och hämtar bilder.
+CameraInput.cpp – the implementation itself that opens the camera and retrieves images.
 
-**Header i CameraInput.cpp:**
+**Header in CameraInput.cpp:**
 
 ```cpp
-
 /*
-
 Component: CameraInput
-
-Primary owner: [Namn]
-
+Primary owner: [Name]
 Checkpoint: [Checkpoint]
-
 Responsibility: Capture valid camera frames for the processing pipeline.
-
 Main contributions: Camera setup, frame capture and input validation.
-
 */
 ```
 
-**Kort flöde:**  
+**Short flow:**  
 
-Kamera → CameraInput → giltig frame → MarkerDetector
+Camera → CameraInput → valid frame → MarkerDetector
 
 
 ### B – MarkerDetector
 
-**Beskrivning:**  
+**Description:**  
 
-MarkerDetector ansvarar för att ta emot kamerabilden från CameraInput och leta efter möjliga markers i bilden. Komponenten bearbetar bilden, hittar områden och konturer och letar efter former som kan vara en fyrkantig marker. När en lämplig fyrkant hittas ska komponenten hitta dess fyra hörn och skicka informationen vidare. Den säger alltså ännu inte säkert att fyrkanten är vår marker, utan hittar möjliga marker-kandidater.
+MarkerDetector is responsible for receiving the camera image from CameraInput and searching for potential markers in the image. The component processes the image, finds regions and contours, and looks for shapes that could be a square marker. When a suitable square is found, the component must find its four corners and pass the information forward. It does not yet definitively state that the square is our marker, but rather finds potential marker candidates.
 
-**Samarbete:**  
+**Collaboration:**  
 
-MarkerDetector tar emot kamerabilden från CameraInput och skickar den hittade fyrkanten och dess hörn vidare till MarkerRecognizer. Personen som ansvarar för MarkerDetector behöver därför samarbeta med både CameraInput- och MarkerRecognizer-ansvariga om vilken information som tas emot och skickas vidare.
+MarkerDetector receives the camera image from CameraInput and passes the found square and its corners on to MarkerRecognizer. The person responsible for MarkerDetector must therefore collaborate with both the CameraInput and MarkerRecognizer owners regarding what information is received and forwarded.
 
-**Ska inte göra:**  
+**Should not do:**  
 
-MarkerDetector ska inte bestämma markerens identitet, beräkna dess pose eller styra ljudet. Dess ansvar är främst att hitta en lämplig fyrkant och dess hörn.
+MarkerDetector must not determine the marker's identity, calculate its pose, or control the audio. Its responsibility is primarily to find a suitable square and its corners.
 
-**Filer:**  
+**Files:**  
 
-MarkerDetector.hpp – komponentens interface, alltså vad andra delar av programmet kan använda.  
+MarkerDetector.hpp – the component's interface, i.e., what other parts of the program can use.  
 
-MarkerDetector.cpp – själva implementationen för bildbearbetning, konturer, fyrkantskontroll och hörn.
+MarkerDetector.cpp – the implementation itself for image processing, contours, square validation, and corners.
 
-**Header i MarkerDetector.cpp:**
+**Header in MarkerDetector.cpp:**
 
 ```cpp
 /*
 Component: MarkerDetector
-Primary owner: [Namn]
+Primary owner: [Name]
 Checkpoint: [Checkpoint]
 Responsibility: Find marker candidates and their corners in the camera image.
 Main contributions: Image processing, contour detection, quadrilateral validation and corner detection.
 */
 ```
 
-**Kort flöde:**  
+**Short flow:**  
 
-CameraInput → kamerabild → MarkerDetector → fyrkant + 4 hörn → MarkerRecognizer
+CameraInput → camera image → MarkerDetector → square + 4 corners → MarkerRecognizer
 
 ### C – MarkerRecognizer
 
-**Beskrivning:**  
+**Description:**  
 
-MarkerRecognizer ansvarar för att ta emot marker-kandidaten från MarkerDetector och kontrollera om den verkligen är vår marker. Komponenten gör den hittade fyrkanten till en normaliserad, rak bild och jämför mönstret med det kända marker-mönstret. Om mönstret stämmer ska komponenten identifiera markern och bestämma dess orientation, alltså hur den är roterad.
+MarkerRecognizer is responsible for receiving the marker candidate from MarkerDetector and checking whether it truly is our marker. The component transforms the found square into a normalised, straight image and compares the pattern with the known marker pattern. If the pattern matches, the component must identify the marker and determine its orientation, i.e., how it is rotated.
 
-**Samarbete:**  
+**Collaboration:**  
 
-MarkerRecognizer tar emot fyrkanten och dess hörn från MarkerDetector. När markern har blivit godkänd skickas information om den vidare till PoseEstimator, som använder hörnen, markerinformationen och kamerainformationen för att beräkna markerens pose.
+MarkerRecognizer receives the square and its corners from MarkerDetector. Once the marker has been approved, information about it is sent on to PoseEstimator, which uses the corners, marker information, and camera information to calculate the marker's pose.
 
-**Ska inte göra:**  
+**Should not do:**  
 
-MarkerRecognizer ska inte hämta kamerabilder, leta efter fyrkanter från början, beräkna den slutliga positionen/pose eller styra ljudet. Dess huvudansvar är att avgöra om kandidaten är rätt marker och bestämma dess identitet och orientation.
+MarkerRecognizer must not retrieve camera images, search for squares from scratch, calculate the final position/pose, or control the audio. Its main responsibility is to determine if the candidate is the correct marker and to establish its identity and orientation.
 
-**Filer:**  
+**Files:**  
 
-MarkerRecognizer.hpp – komponentens interface, alltså vad andra delar av programmet kan använda.  
+MarkerRecognizer.hpp – the component's interface, i.e., what other parts of the program can use.  
 
-MarkerRecognizer.cpp – själva implementationen för normalisering, jämförelse med känt marker-mönster och recognition.
+MarkerRecognizer.cpp – the implementation itself for normalisation, comparison with known marker pattern, and recognition.
 
-**Header i MarkerRecognizer.cpp:**
+**Header in MarkerRecognizer.cpp:**
 
 ```cpp
 /*
 Component: MarkerRecognizer
-Primary owner: [Namn]
+Primary owner: [Name]
 Checkpoint: [Checkpoint]
 Responsibility: Recognise the marker and determine its identity and orientation.
 Main contributions: Marker normalisation, pattern matching and orientation detection.
 */
 ```
 
-**Kort flöde:**  
+**Short flow:**  
 
-MarkerDetector → fyrkant + hörn → MarkerRecognizer → godkänd marker + orientation → PoseEstimator
+MarkerDetector → square + corners → MarkerRecognizer → approved marker + orientation → PoseEstimator
 
 
 ### D – PoseEstimator
 
-**Beskrivning:**  
+**Description:**  
 
-PoseEstimator ansvarar för att beräkna var markern befinner sig och hur den är riktad i förhållande till kameran. Komponenten använder information om den godkända markern, dess hörn och kamerans kalibreringsinformation. Resultatet blir användbara värden för markerens position och rotation, alltså dess pose. Dessa värden behövs för att AudioController ska kunna koppla markerens rörelse till ljudet.
+PoseEstimator is responsible for calculating where the marker is located and how it is oriented relative to the camera. The component uses information about the approved marker, its corners, and the camera's calibration data. The result is usable values for the marker's position and rotation, i.e., its pose. These values are needed for AudioController to link the marker's movement to the audio.
 
-**Samarbete:**  
+**Collaboration:**  
 
-PoseEstimator tar emot den godkända markerinformationen från MarkerRecognizer. Den skickar sedan färdiga värden, till exempel position/avstånd och rotation, vidare till AudioController.
+PoseEstimator receives the approved marker information from MarkerRecognizer. It then sends finished values, such as position/distance and rotation, on to AudioController.
 
-**Ska inte göra:**  
+**Should not do:**  
 
-PoseEstimator ska inte öppna kameran, hitta fyrkanter, avgöra om kandidaten är rätt marker eller spela/styra ljudet. Den ska framför allt omvandla informationen om den redan identifierade markern till användbar position och rotation.
+PoseEstimator must not open the camera, find squares, determine whether the candidate is the correct marker, or play/control the audio. Above all, it should convert the information about the already identified marker into usable position and rotation.
 
-**Filer:**  
+**Files:**  
 
-PoseEstimator.hpp – komponentens interface, alltså vad andra delar av programmet kan använda.  
+PoseEstimator.hpp – the component's interface, i.e., what other parts of the program can use.  
 
-PoseEstimator.cpp – själva implementationen för homography, kameratransformation och beräkning/förfining av pose.
+PoseEstimator.cpp – the implementation itself for homography, camera transformation, and pose calculation/refinement.
 
-**Header i PoseEstimator.cpp:**
+**Header in PoseEstimator.cpp:**
 
 ```cpp
 /*
 Component: PoseEstimator
-Primary owner: [Namn]
+Primary owner: [Name]
 Checkpoint: [Checkpoint]
 Responsibility: Estimate the marker position and rotation relative to the camera.
 Main contributions: Homography, camera transformation and pose estimation.
 */
 ```
 
-**Kort flöde:**  
+**Short flow:**  
 
-MarkerRecognizer → godkänd marker + hörn → PoseEstimator → position/avstånd + rotation → AudioController
+MarkerRecognizer → approved marker + corners → PoseEstimator → position/distance + rotation → AudioController
 
 
 ### E – AudioController
 
-**Beskrivning:**  
+**Description:**  
 
-AudioController ansvarar för själva ljudet och interaktionen i projektet. Komponenten tar emot information om markern och använder den för att styra ljudet enligt vår Mini Proposal. När markern syns ska ljudet kunna spelas och när markern försvinner ska ljudet stoppas. Markerens avstånd från kameran ska användas för att ändra pitch, och rotationen ska kunna användas för att ändra volymen.
+AudioController is responsible for the actual sound and interaction in the project. The component receives information about the marker and uses it to control the audio according to our Mini Proposal. When the marker is visible, the audio should play, and when the marker disappears, the audio should stop. The marker's distance from the camera should be used to change the pitch, and the rotation can be used to change the volume.
 
-**Samarbete:**  
+**Collaboration:**  
 
-AudioController tar främst emot färdig information från PoseEstimator, till exempel markerens position/avstånd och rotation. Den behöver också veta om markern är synlig eller har försvunnit. Personen som ansvarar för AudioController behöver därför samarbeta med PoseEstimator-ansvarig om vilka värden som ska skickas till ljuddelen.
+AudioController primarily receives finished information from PoseEstimator, such as the marker's position/distance and rotation. It also needs to know if the marker is visible or has disappeared. The person responsible for AudioController therefore needs to collaborate with the PoseEstimator owner regarding which values should be sent to the audio part.
 
-**Ska inte göra:**  
+**Should not do:**  
 
-AudioController ska inte öppna kameran, leta efter fyrkanter, känna igen markern eller själv beräkna markerens pose. Den ska använda den färdiga markerinformationen för att styra ljudet.
+AudioController must not open the camera, search for squares, recognise the marker, or calculate the marker's pose itself. It must use the finished marker information to control the audio.
 
-**Filer:**  
+**Files:**  
 
-AudioController.hpp – komponentens interface, alltså vad andra delar av programmet kan använda.  
+AudioController.hpp – the component's interface, i.e., what other parts of the program can use.  
 
-AudioController.cpp – själva implementationen för att spela/stoppa ljud och ändra pitch och volym.
+AudioController.cpp – the implementation itself for playing/stopping audio and changing pitch and volume.
 
-**Header i AudioController.cpp:**
+**Header in AudioController.cpp:**
 
 ```cpp
 /*
 Component: AudioController
-Primary owner: [Namn]
+Primary owner: [Name]
 Checkpoint: [Checkpoint]
 Responsibility: Control audio using information from the recognised marker.
 Main contributions: Play/stop control, pitch control and volume control.
 */
 ```
 
-**Kort flöde:**  
+**Short flow:**  
 
-PoseEstimator → marker synlig + avstånd + rotation → AudioController → play/stop + pitch + volume
+PoseEstimator → marker visible + distance + rotation → AudioController → play/stop + pitch + volume
+## Diagram 
+- **Camera / Video**
+  - $\downarrow$
+- **CameraInput** -Gets the camera image
+  - $\downarrow$
+- **MarkerDetector** -Finds the marker candidate
+  - $\downarrow$
+- **MarkerRecognizer** -Recognises the marker and orientation
+  - $\downarrow$
+- **PoseEstimator** -Calculates position and rotation
+  - $\downarrow$
+- **AudioController** -Controls audio, pitch, and volume
