@@ -1,18 +1,32 @@
 # Audio Controller – Components
 
+## System Overview
+
+Moving and rotating a physical marker in front of the camera controls audio. Showing or hiding the marker starts or stops the audio, moving the marker closer to or further from the camera changes the pitch, and rotating the marker changes the volume.
+
+## Minimum Version
+
+The minimum version of the system will:
+- Start the audio when the marker is visible.
+- Stop the audio when the marker is missing.
+- Change the pitch based on the marker's distance from the camera.
+
+Changing the volume by rotating the marker is an optional extension.
+
 A – CameraInput → Fetches the camera image  
 B – MarkerDetector → Finds the marker candidates   
 C – MarkerRecognizer → Recognises the marker  
 D – PoseEstimator → Calculates position and rotation  
 E – AudioController → Controls audio, pitch, and volume
-## Table for components
-| Component | Responsibility | Input | Output | Primary owner | First evidence |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| CameraInput | Fetches the camera image | Device / video | `cv::Mat` (valid frame) | `Hamed` | Saved frame |
-| MarkerDetector | Finds the marker candidates | `cv::Mat` (camera image) | Square + 4 corners | `Hamed` | Debug overlay |
-| MarkerRecognizer | Recognises the marker and orientation | Square + corners | Approved marker + orientation | `Jonathan` | Pattern match test |
-| PoseEstimator | Calculates position and rotation | Approved marker + corners | Position + rotation | `Abdulmajid` | Pose coordinates |
-| AudioController | Controls audio, pitch, and volume | Position + rotation + visibility | Play/stop + pitch + volume | `Ali` | Audio output change |
+## Table for Components
+
+| Component | What does it do? | What does it receive? | What does it send? | If it fails / finds nothing | Primary owner | First evidence |
+|---|---|---|---|---|---|---|
+| **CameraInput** | Gets valid camera frames | Camera or video | `cv::Mat` camera frame | No valid frame is sent | **Hamed** | Saved camera frame |
+| **MarkerDetector** | Finds possible square markers | `cv::Mat` camera frame | Marker candidate + 4 corners | No marker candidate is sent | **Hamed** | Debug overlay showing detected square |
+| **MarkerRecognizer** | Checks if the candidate is our marker and finds its orientation | Camera frame + marker candidate + 4 corners | Marker visibility + identity + orientation + 4 corners | Marker is reported as not recognised | **Jonathan** | Test showing correct pattern match |
+| **PoseEstimator** | Calculates marker position and rotation | Recognised marker + 4 corners + camera calibration data | Position/distance + rotation | No valid pose is sent | **Abdulmajid** | Displayed pose values |
+| **AudioController** | Uses marker information to control the audio | Visibility + distance + rotation | Play/stop + pitch + volume | If marker is missing, audio stops | **Ali** | Audible change in audio |
 ## Component Responsibilities
 ### A – CameraInput
 
@@ -27,6 +41,12 @@ CameraInput primarily collaborates with MarkerDetector. CameraInput delivers the
 **Should not do:**  
 
 CameraInput must not search for squares, recognise the marker, calculate the marker's position/rotation, or control the audio. Its responsibility ends once a working camera image has been passed on.
+
+**Initial Interface:**
+
+- **Input:** Camera or video source.
+- **Output:** A valid `cv::Mat` camera frame.
+- **Failure:** If the camera cannot be opened or a frame cannot be read, no valid frame is passed to MarkerDetector.
 
 **Files:**  
 
@@ -65,6 +85,12 @@ MarkerDetector receives the camera image from CameraInput and passes the found s
 
 MarkerDetector must not determine the marker's identity, calculate its pose, or control the audio. Its responsibility is primarily to find a suitable square and its corners.
 
+**Initial Interface:**
+
+- **Input:** A valid `cv::Mat` camera frame from CameraInput.
+- **Output:** A marker candidate with its 4 corners.
+- **Failure:** If no suitable square is found, no marker candidate is passed to MarkerRecognizer.
+
 **Files:**  
 
 MarkerDetector.hpp – the component's interface, i.e., what other parts of the program can use.  
@@ -95,11 +121,17 @@ MarkerRecognizer is responsible for receiving the marker candidate from MarkerDe
 
 **Collaboration:**  
 
-MarkerRecognizer receives the square and its corners from MarkerDetector. Once the marker has been approved, information about it is sent on to PoseEstimator, which uses the corners, marker information, and camera information to calculate the marker's pose.
+MarkerRecognizer receives the camera frame and the marker candidate with its corners. Once the marker has been approved, information about it is sent on to PoseEstimator, which uses the corners, marker information, and camera information to calculate the marker's pose.
 
 **Should not do:**  
 
 MarkerRecognizer must not retrieve camera images, search for squares from scratch, calculate the final position/pose, or control the audio. Its main responsibility is to determine if the candidate is the correct marker and to establish its identity and orientation.
+
+**Initial Interface:**
+
+- **Input:** The camera frame and a marker candidate with its 4 corners from MarkerDetector.
+- **Output:** Marker visibility and, when recognised, the marker's identity, orientation, and 4 corners.
+- **Failure:** If the candidate does not match the known marker pattern, marker visibility is set to false and no recognised marker is passed to PoseEstimator.
 
 **Files:**  
 
@@ -112,7 +144,7 @@ MarkerRecognizer.cpp – the implementation itself for normalisation, comparison
 ```cpp
 /*
 Component: MarkerRecognizer
-Primary owner: [Name]
+Primary owner: Jonathan
 Checkpoint: [Checkpoint]
 Responsibility: Recognise the marker and determine its identity and orientation.
 Main contributions: Marker normalisation, pattern matching and orientation detection.
@@ -121,7 +153,7 @@ Main contributions: Marker normalisation, pattern matching and orientation detec
 
 **Short flow:**  
 
-MarkerDetector → square + corners → MarkerRecognizer → approved marker + orientation → PoseEstimator
+MarkerDetector → camera frame + marker candidate + 4 corners → MarkerRecognizer → marker visibility + identity + orientation + 4 corners
 
 
 ### D – PoseEstimator
@@ -138,6 +170,12 @@ PoseEstimator receives the approved marker information from MarkerRecognizer. It
 
 PoseEstimator must not open the camera, find squares, determine whether the candidate is the correct marker, or play/control the audio. Above all, it should convert the information about the already identified marker into usable position and rotation.
 
+**Initial Interface:**
+
+- **Input:** A recognised marker with its 4 corners from MarkerRecognizer, together with the required camera calibration data.
+- **Output:** The marker's position/distance and rotation relative to the camera.
+- **Failure:** If a valid pose cannot be calculated, no pose values are passed to AudioController.
+
 **Files:**  
 
 PoseEstimator.hpp – the component's interface, i.e., what other parts of the program can use.  
@@ -149,7 +187,7 @@ PoseEstimator.cpp – the implementation itself for homography, camera transform
 ```cpp
 /*
 Component: PoseEstimator
-Primary owner: [Name]
+Primary owner: Abdulmajid
 Checkpoint: [Checkpoint]
 Responsibility: Estimate the marker position and rotation relative to the camera.
 Main contributions: Homography, camera transformation and pose estimation.
@@ -169,11 +207,17 @@ AudioController is responsible for the actual sound and interaction in the proje
 
 **Collaboration:**  
 
-AudioController primarily receives finished information from PoseEstimator, such as the marker's position/distance and rotation. It also needs to know if the marker is visible or has disappeared. The person responsible for AudioController therefore needs to collaborate with the PoseEstimator owner regarding which values should be sent to the audio part.
+AudioController receives marker visibility from MarkerRecognizer and position/distance and rotation from PoseEstimator. The person responsible for AudioController therefore needs to collaborate with both the MarkerRecognizer and PoseEstimator owners regarding the information passed to the audio part.
 
 **Should not do:**  
 
 AudioController must not open the camera, search for squares, recognise the marker, or calculate the marker's pose itself. It must use the finished marker information to control the audio.
+
+**Initial Interface:**
+
+- **Input:** Marker visibility, position/distance, and rotation.
+- **Output:** Audio play/stop, pitch, and volume control.
+- **Failure / absence:** If the marker is missing or no valid marker information is available, the audio stops.
 
 **Files:**  
 
@@ -186,7 +230,7 @@ AudioController.cpp – the implementation itself for playing/stopping audio and
 ```cpp
 /*
 Component: AudioController
-Primary owner: [Name]
+Primary owner: Ali
 Checkpoint: [Checkpoint]
 Responsibility: Control audio using information from the recognised marker.
 Main contributions: Play/stop control, pitch control and volume control.
@@ -195,16 +239,28 @@ Main contributions: Play/stop control, pitch control and volume control.
 
 **Short flow:**  
 
-PoseEstimator → marker visible + distance + rotation → AudioController → play/stop + pitch + volume
+MarkerRecognizer → marker visibility → AudioController  
+PoseEstimator → position/distance + rotation → AudioController → play/stop + pitch + volume
+
 ## Diagram 
 - **Camera / Video**
-  - $\downarrow$
-- **CameraInput** -Gets the camera image
-  - $\downarrow$
-- **MarkerDetector** -Finds the marker candidate
-  - $\downarrow$
-- **MarkerRecognizer** -Recognises the marker and orientation
-  - $\downarrow$
-- **PoseEstimator** -Calculates position and rotation
-  - $\downarrow$
-- **AudioController** -Controls audio, pitch, and volume
+  - $\downarrow$ camera or video input
+- **CameraInput** - Gets the camera image
+  - $\downarrow$ `cv::Mat` camera frame
+- **MarkerDetector** - Finds the marker candidate
+  - $\downarrow$ marker candidate + 4 corners
+- **MarkerRecognizer** - Recognises the marker and determines marker visibility
+  - $\rightarrow$ marker visibility → AudioController
+  - $\downarrow$ recognised marker + identity + orientation + 4 corners → PoseEstimator
+- **PoseEstimator** - Calculates position and rotation using camera calibration data
+  - $\downarrow$ position/distance + rotation
+- **AudioController** - Controls audio, pitch, and volume
+
+## First Integration Target
+**Components:** CameraInput → MarkerDetector
+
+**Visible result:** CameraInput continuously sends valid camera frames to MarkerDetector, and MarkerDetector displays a simple processed debug view of the received frames.
+
+**Done when:** The project builds successfully, CameraInput continuously provides frames to MarkerDetector, the processed debug view updates continuously, and the program closes cleanly.
+
+**Integration coordinator:** Hamed
