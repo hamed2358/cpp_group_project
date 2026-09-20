@@ -18,7 +18,7 @@ MarkerData recognizeMarker(const cv::Mat& frame, const std::vector<cv::Point>& c
 // give orentation
 
 //output marker visability,marker id orientation and 4 corners
-return MarkerData;
+
 };
 struct MarkerData {
     bool isVisible = false;
