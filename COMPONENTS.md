@@ -39,7 +39,7 @@ CameraInput.cpp – the implementation itself that opens the camera and retrieve
 ```cpp
 /*
 Component: CameraInput
-Primary owner: [Name]
+Primary owner: Hamed
 Checkpoint: [Checkpoint]
 Responsibility: Capture valid camera frames for the processing pipeline.
 Main contributions: Camera setup, frame capture and input validation.
@@ -76,7 +76,7 @@ MarkerDetector.cpp – the implementation itself for image processing, contours,
 ```cpp
 /*
 Component: MarkerDetector
-Primary owner: [Name]
+Primary owner: Hamed
 Checkpoint: [Checkpoint]
 Responsibility: Find marker candidates and their corners in the camera image.
 Main contributions: Image processing, contour detection, quadrilateral validation and corner detection.
