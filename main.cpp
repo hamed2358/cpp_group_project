@@ -2,6 +2,7 @@
 #include <opencv2/opencv.hpp>
 #include "CameraInput.hpp"
 #include "MarkerDetector.hpp"
+#include "MarkerRecognizer.hpp"
 
 int main()
 
@@ -11,6 +12,7 @@ int main()
 
     CameraInput camera;
     MarkerDetector detector;
+    MarkerRecognizer Recognizer;
 
     if (!camera.openCamera(0)) {
 
@@ -29,7 +31,12 @@ int main()
         cv::Mat processedFrame = detector.processFrame(frame);
         if (detector.corners.size() == 4)
          {
-             std::cout << "Marker candidate found: 4 corners\n";
+            double outAngle = 0.0;
+            cv::Mat binaryMarker;
+            if (Recognizer.processMarker(frame, detector.corners, outAngle, binaryMarker)) {
+            std::cout << "Detected Angle: " << outAngle << "\n";
+            }
+            // std::cout << "Marker candidate found: 4 corners\n";
          }
         cv::imshow("MarkerDetector debug",  processedFrame);
 
