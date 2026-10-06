@@ -4,14 +4,15 @@
 //#include <opencv2/geometry.hpp>
 
 struct MarkerData {
-    bool isVisible = false;
+    bool isDetected = false;
     int id = -1;
-    int orientation = 0; // degrees
-    std::vector<cv::Point> corners;
+    double outAngle = 0; // degrees
+    std::vector<cv::Point2f> corners;
+    cv::Mat binaryMarker;
 };
 
 class MarkerRecognizer{
     public:
 //input camera frame and 4 corners
-bool processMarker(const cv::Mat& frame, const std::vector<cv::Point>& corners, double& outAngle, cv::Mat& binaryMarker);
+MarkerData processMarker(const cv::Mat& frame, const std::vector<cv::Point>& corners);
 };
