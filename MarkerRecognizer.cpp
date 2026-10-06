@@ -10,8 +10,9 @@ Main contributions: Marker normalisation, pattern matching and orientation detec
 #include <opencv2/opencv.hpp>
 #include <cmath>
 
-bool MarkerRecognizer::processMarker(const cv::Mat& frame, const std::vector<cv::Point>& corners, double& outAngle, cv::Mat& binaryMarker) {
-    if (corners.size() < 4) return false;
+MarkerData MarkerRecognizer::processMarker(const cv::Mat& frame, const std::vector<cv::Point>& corners) {
+    MarkerData data;
+    if (corners.size() < 4) return data;
 //Find Top-Left (min sum) and Bottom-Right (max sum)
     int tlIdx = 0, brIdx = 0, trIdx = -1, blIdx = -1;
     double minSum = corners[0].x + corners[0].y; 
@@ -40,7 +41,7 @@ bool MarkerRecognizer::processMarker(const cv::Mat& frame, const std::vector<cv:
         }
     }
     if (trIdx == -1 || blIdx == -1) {
-        return false;
+        return data;
     }
 
 //srcPoints in clockwise order: TL, TR, BR, BL
@@ -66,6 +67,7 @@ bool MarkerRecognizer::processMarker(const cv::Mat& frame, const std::vector<cv:
     cv::Point2f(0, 200)
 };
 
+data.corners = srcPoints;
 // Warp perspective to straighten it out 
     cv::Mat transformMatrix = cv::getPerspectiveTransform(srcPoints, dstPoints);
     cv::Mat warpedMarker;
@@ -78,12 +80,12 @@ bool MarkerRecognizer::processMarker(const cv::Mat& frame, const std::vector<cv:
 // Calculate rotation angle from top edge
     double deltaX = srcPoints[1].x - srcPoints[0].x;
     double deltaY = srcPoints[1].y - srcPoints[0].y;
-    outAngle = std::atan2(deltaY, deltaX) * (180.0 / CV_PI);
+    data.outAngle = std::atan2(deltaY, deltaX) * (180.0 / CV_PI);
 
 // Grayscale & Binarization
     cv::Mat grayMarker;
     cv::cvtColor(warpedMarker, grayMarker, cv::COLOR_BGR2GRAY);
-    cv::threshold(grayMarker, binaryMarker, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
+    cv::threshold(grayMarker, data.binaryMarker, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
 // Assume binaryMarker is the 200x200 binarized image
 bool isDetected = false;
 int rotFlags[] = {cv::ROTATE_90_CLOCKWISE, cv::ROTATE_180, cv::ROTATE_90_COUNTERCLOCKWISE};
@@ -94,22 +96,22 @@ int detectedAngle = 0;
     cv::Rect topLeftRect(0, 0, 40, 40);
     for (int i = 0; i < 4; ++i) {
         if (i == 0) {
-            currentMarker = binaryMarker;
+            currentMarker = data.binaryMarker;
         } else {
-            cv::rotate(binaryMarker, currentMarker, rotFlags[i - 1]);
+            cv::rotate(data.binaryMarker, currentMarker, rotFlags[i - 1]);
         }
     // Check corner brightness and add tilt + rotation angle from top edge  
         double brightness = cv::mean(currentMarker(topLeftRect))[0];
         int markerAngles[] = {0, 270, 90, 180};
         if (brightness > 127) {
             detectedAngle = markerAngles[i]; 
-            outAngle = outAngle + detectedAngle;
-            binaryMarker = currentMarker;
-            isDetected = true;
+            data.outAngle = data.outAngle + detectedAngle;
+            data.binaryMarker = currentMarker;
+            data.isDetected = true;
+            data.id = -1;
             break; 
         }
     }
 // Marker successfully processed
- return isDetected; 
+ return data; 
 }
-
