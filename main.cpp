@@ -31,10 +31,16 @@ int main()
         cv::Mat processedFrame = detector.processFrame(frame);
         if (detector.corners.size() == 4)
          {
-            double outAngle = 0.0;
+            MarkerRecognizer recognizer;
+            MarkerData marker = recognizer.processMarker(frame, detector.corners);
             cv::Mat binaryMarker;
-            if (Recognizer.processMarker(frame, detector.corners, outAngle, binaryMarker)) {
-            std::cout << "Detected Angle: " << outAngle << "\n";
+            if (marker.isDetected) {
+                //std::cout << "Marker ID: " << marker.id << "\n";
+                std::cout << "Angle: " << marker.outAngle << "\n";
+                //std::cout << "Marker corners: " << marker.corners << "\n";
+                //std::cout << "Binary marker: " << marker.binaryMarker << "\n";
+                //std::cout << "Marker is detected: " << marker.isDetected << "\n";
+
             }
             // std::cout << "Marker candidate found: 4 corners\n";
          }
