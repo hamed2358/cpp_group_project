@@ -78,7 +78,8 @@ MarkerData MarkerRecognizer::processMarker(const cv::Mat& frame, const std::vect
     double deltaY = srcPoints[1].y - srcPoints[0].y;
     data.outAngle = std::atan2(deltaY, deltaX) * (180.00 / CV_PI);
     data.outAngle = std::fmod(data.outAngle + 360.0, 360.0);
-    double edgeTilt = data.outAngle - std::round(data.outAngle / 90.0) * 90.0;
+  double edgeTilt = 90.0 - std::fmod(data.outAngle, 90.0);
+   
 
 // binarization
     cv::Mat grayMarker;
@@ -91,8 +92,8 @@ MarkerData MarkerRecognizer::processMarker(const cv::Mat& frame, const std::vect
     cv::Mat currentRotation;
 
 // cell 1/2 for pattern detection
-    double c1 = 1.45, r1 = 1.2;
-    double c2 = 1.6, r2 = 1.5;
+    double c1 = 1.6, r1 = 1;
+    double c2 = 2.6, r2 = 2;
 
     cv::Rect cell1Rect(40 + c1 * 30, 40 + r1 * 30, 30, 30);
     cv::Rect cell2Rect(40 + c2 * 30, 40 + r2 * 30, 30, 30);
@@ -115,6 +116,8 @@ MarkerData MarkerRecognizer::processMarker(const cv::Mat& frame, const std::vect
             double brightness2 = cv::mean(currentRotation(cell2Rect))[0];
             std::cout << "rotation: " << i << "brightness1: " << brightness1
           << " brightness2: " << brightness2 << std::endl;
+
+          
             
             if (brightness1 < 140 && brightness2 < 140) {
                 double totalBrightness = brightness1 + brightness2;
@@ -130,8 +133,14 @@ MarkerData MarkerRecognizer::processMarker(const cv::Mat& frame, const std::vect
     // if our marker then add the values
     if (foundValid) {
         std::cout << "bestRotationIdx: " << bestRotationIdx << std::endl;
+
+        std::cout << "rawAngle: " << data.outAngle
+          << " edgeTilt: " << edgeTilt
+          << " markerAngle: " << markerAngles[bestRotationIdx] << std::endl;
+    
         
         data.outAngle = markerAngles[bestRotationIdx] + edgeTilt ;
+        
         if (edgeTilt > 44) {
             if (markerAngles[bestRotationIdx] == 0) {
                 data.outAngle += 270; 
@@ -139,6 +148,7 @@ MarkerData MarkerRecognizer::processMarker(const cv::Mat& frame, const std::vect
                 data.outAngle -= 90; 
             }
         }
+        data.outAngle = std::fmod(data.outAngle + 360.0, 360.0);
         data.binaryMarker = bestRotationMatch;
         data.isDetected = true;
         data.id = -1; 
