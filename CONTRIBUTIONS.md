@@ -54,3 +54,34 @@ distance and rotation.
 
 Branch: feature/audio-controller  
 Pull Request: https://github.com/hamed2358/cpp_group_project/pull/10
+
+
+## Abdulmajid Almohamed
+
+### PoseEstimator
+
+Files:
+
+- PoseEstimator.hpp
+- PoseEstimator.cpp
+
+Responsible for estimating the marker's 3D position and distance
+relative to the camera using marker corners and camera calibration.
+
+Branch: feature/pose-estimator
+Pull Request: https://github.com/hamed2358/cpp_group_project/pull/7
+
+
+### Assignment 2 – AudioController
+
+Files:
+
+- AudioController.hpp
+- AudioController.cpp
+- test_audio_stop_reasons.cpp
+
+Investigated and improved AudioController's stop-reason diagnostics
+and OpenCV build compatibility using reproducible before-and-after tests.
+
+Branch: assignment2/audio-stop-reasons
+Pull Request: https://github.com/hamed2358/cpp_group_project/pull/12
