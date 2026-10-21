@@ -1,7 +1,7 @@
 #pragma once
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
-#include <opencv2/geometry.hpp>
+//#include <opencv2/geometry.hpp>
 
 
 //Detects possible square marker candidates in a camera fram. 

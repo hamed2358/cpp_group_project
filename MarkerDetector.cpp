@@ -2,6 +2,7 @@
 
 
 
+
 //proccess a camera frame to find possible square marker candidate.
 //The frame is converted to grayscalea and thresholded before seraching for contours. 
 cv::Mat MarkerDetector::processFrame(const cv::Mat &frame) 
@@ -18,6 +19,8 @@ cv::Mat MarkerDetector::processFrame(const cv::Mat &frame)
 
     cv::findContours(binary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
     
+    double largestArea = 0;
+    double frameArea = frame.cols * frame.rows;
     // Check each contour to find a possible square candidate. 
     for(const auto& contour : contours)
     {
@@ -25,13 +28,19 @@ cv::Mat MarkerDetector::processFrame(const cv::Mat &frame)
         cv::approxPolyDP(contour, approx, 0.02 * cv::arcLength(contour, true), true);
         if(approx.size() == 4)
         {
-            if(cv::contourArea(approx) > 1000)
+            double area = cv::contourArea(approx);
+            if(area > 1000 && area < frameArea * 0.5 && area > largestArea)
             {
+                largestArea = area;
                 corners = approx;
-                cv::polylines(debug, approx, true, cv::Scalar(0, 255, 0), 3);
+            
             }
 
         }
     }
+    if(corners.size() == 4)
+{
+    cv::polylines(debug, corners, true, cv::Scalar(0, 255, 0), 3);
+}
     return debug;
 }
