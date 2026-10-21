@@ -7,7 +7,7 @@ Main contributions: Marker normalisation, pattern matching and orientation detec
 
 #include "MarkerRecognizer.hpp"
 #include <opencv2/opencv.hpp>
-#include <opencv2/geometry/2d.hpp>
+//#include <opencv2/geometry/2d.hpp>
 #include <cmath>
 #include <iostream>
 
