@@ -9,3 +9,10 @@ add_executable(camera_grab main.cpp CameraInput.cpp MarkerDetector.cpp)
 # Give the program access to OpenCV headers and libraries.
 target_include_directories(camera_grab PRIVATE ${OpenCV_INCLUDE_DIRS})
 target_link_libraries(camera_grab PRIVATE ${OpenCV_LIBS})
+add_executable(pose_test
+    pose_test.cpp
+    PoseEstimator.cpp
+)
+
+target_include_directories(pose_test PRIVATE ${OpenCV_INCLUDE_DIRS})
+target_link_libraries(pose_test PRIVATE ${OpenCV_LIBS})

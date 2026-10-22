@@ -30,6 +30,15 @@ std::optional<Pose> PoseEstimator::estimatePose(
     {
         return std::nullopt;
     }
+    // Avvisa hörn med NaN eller oändliga koordinater.
+    for (const auto &corner : imageCorners)
+    {
+        if (!std::isfinite(corner.x) ||
+            !std::isfinite(corner.y))
+        {
+            return std::nullopt;
+        }
+    }
 
     // Markörens sidlängd ska vara ändlig och större än noll.
     // Storleken anges i meter.
