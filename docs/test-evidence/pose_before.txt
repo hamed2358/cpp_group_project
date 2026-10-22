@@ -1,0 +1,4 @@
+PASS: Valid corners, distance=0.5
+FAIL: NaN coordinate, distance=nan
+FAIL: Infinite coordinate, distance=nan
+1/3 tests passed.

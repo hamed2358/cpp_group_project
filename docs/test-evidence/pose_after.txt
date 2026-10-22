@@ -1,0 +1,4 @@
+PASS: Valid corners, distance=0.5
+PASS: NaN coordinate, returned nullopt
+PASS: Infinite coordinate, returned nullopt
+3/3 tests passed.
