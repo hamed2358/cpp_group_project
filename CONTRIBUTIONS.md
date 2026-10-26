@@ -54,3 +54,17 @@ distance and rotation.
 
 Branch: feature/audio-controller  
 Pull Request: https://github.com/hamed2358/cpp_group_project/pull/10
+
+## Abdulmajid Almohamed
+
+### PoseEstimator
+
+Files:
+
+- PoseEstimator.hpp
+- PoseEstimator.cpp
+
+Responsible for estimating the marker's position and distance relative to the camera.
+
+Branch: feature/pose-estimator
+Pull Request: https://github.com/hamed2358/cpp_group_project/pull/9
