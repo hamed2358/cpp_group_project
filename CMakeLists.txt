@@ -25,3 +25,18 @@ add_executable(audio_test
 )
 
 target_link_libraries(audio_test PRIVATE SFML::Audio)
+
+
+# OpenCV 5 requires separate geometry declarations.
+# Apply this only to the camera program.
+if(OpenCV_VERSION VERSION_GREATER_EQUAL "5.0")
+    if(MSVC)
+        target_compile_options(camera_grab PRIVATE
+            /FIopencv2/geometry/2d.hpp
+        )
+    else()
+        target_compile_options(camera_grab PRIVATE
+            -include opencv2/geometry/2d.hpp
+        )
+    endif()
+endif()

@@ -1,0 +1,28 @@
+[PASS] Initial state
+[PASS] Valid input starts playback
+[PASS] Missing marker
+[PASS] Recovery after: Missing marker
+[PASS] Zero distance
+[PASS] Recovery after: Zero distance
+[PASS] Negative distance
+[PASS] Recovery after: Negative distance
+[PASS] NaN distance
+[PASS] Recovery after: NaN distance
+[PASS] Positive infinite distance
+[PASS] Recovery after: Positive infinite distance
+[PASS] Negative infinite distance
+[PASS] Recovery after: Negative infinite distance
+[PASS] NaN rotation
+[PASS] Recovery after: NaN rotation
+[PASS] Positive infinite rotation
+[PASS] Recovery after: Positive infinite rotation
+[PASS] Negative infinite rotation
+[PASS] Recovery after: Negative infinite rotation
+[PASS] Missing marker takes priority over invalid values
+[PASS] Recovery after: Missing marker takes priority over invalid values
+[PASS] Invalid distance takes priority over invalid rotation
+[PASS] Recovery after: Invalid distance takes priority over invalid rotation
+[PASS] Zero volume does not create a stop reason
+
+Checks: 25
+Failures: 0

@@ -43,11 +43,43 @@ AudioController::AudioController()
 
 void AudioController::update(const AudioControlInput &input)
 {
+    // Original validation, temporarily commented out for comparison.
+    /*
     // Stoppa ljudet om markören saknas eller styrvärdena är ogiltiga.
     if (!input.visible ||
         !std::isfinite(input.distanceMeters) ||
         input.distanceMeters <= 0.0f ||
         !std::isfinite(input.rotationDegrees))
+    {
+        sound_.stop();
+        return;
+    }
+        */
+
+    // Assignment 2: identify why playback must stop.
+    // If multiple errors occur, prioritize a missing marker,
+    // then invalid distance, then invalid rotation.
+    if (!input.visible)
+    {
+        stopReason_ = StopReason::MarkerMissing;
+    }
+    else if (!std::isfinite(input.distanceMeters) ||
+             input.distanceMeters <= 0.0f)
+    {
+        stopReason_ = StopReason::InvalidDistance;
+    }
+    else if (!std::isfinite(input.rotationDegrees))
+    {
+        stopReason_ = StopReason::InvalidRotation;
+    }
+    else
+    {
+        // Clear the previous stop reason when valid input returns.
+        stopReason_ = StopReason::None;
+    }
+
+    // Preserve the original behavior: invalid input stops playback.
+    if (stopReason_ != StopReason::None)
     {
         sound_.stop();
         return;
@@ -99,6 +131,12 @@ void AudioController::update(const AudioControlInput &input)
     }
 }
 
+// Assignment 2: expose the stop reason for diagnostics and tests.
+AudioController::StopReason AudioController::getStopReason() const
+{
+    return stopReason_;
+}
+
 void AudioController::printDebugState() const
 {
     const auto status = sound_.getStatus();
@@ -113,7 +151,34 @@ void AudioController::printDebugState() const
         statusText = "Paused";
     }
 
+    // Assignment 2: convert the stop reason into readable text.
+    const char *reasonText = "Unknown";
+
+    switch (stopReason_)
+    {
+    case StopReason::NotStarted:
+        reasonText = "Not started";
+        break;
+
+    case StopReason::None:
+        reasonText = "None";
+        break;
+
+    case StopReason::MarkerMissing:
+        reasonText = "Marker missing";
+        break;
+
+    case StopReason::InvalidDistance:
+        reasonText = "Invalid distance";
+        break;
+
+    case StopReason::InvalidRotation:
+        reasonText = "Invalid rotation";
+        break;
+    }
+
     std::cout << "[Audio] status=" << statusText
+              << ", reason=" << reasonText // Assignment 2: added stop reason.
               << ", pitch=" << sound_.getPitch()
               << ", volume=" << sound_.getVolume()
               << std::endl;
