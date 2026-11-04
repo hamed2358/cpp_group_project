@@ -82,6 +82,7 @@ void AudioController::update(const AudioControlInput &input)
     if (stopReason_ != StopReason::None)
     {
         sound_.stop();
+        hasPreviousRotation_ = false;
         return;
     }
 
@@ -105,24 +106,27 @@ void AudioController::update(const AudioControlInput &input)
 
     sound_.setPitch(pitch);
 
-    // Rattvinkeln styr volymen.
-    const float minRotation = -90.0f;
-    const float maxRotation = 90.0f;
-    const float minVolume = 0.0f;
-    const float maxVolume = 40.0f;
+    // Vridningen mellan uppdateringar styr volymen.
+    const float rotation =
+        normalizeRotationDegrees(input.rotationDegrees);
 
-    // Begränsa rotationen till arbetsområdet.
-    float rotation = std::clamp(
-        input.rotationDegrees, minRotation, maxRotation);
+    if (hasPreviousRotation_)
+    {
+        const float rotationChange =
+            normalizeRotationDegrees(rotation - previousRotation_);
 
-    // -90 grader blir 0, +90 grader blir 1.
-    float rotationProportion =
-        (rotation - minRotation) / (maxRotation - minRotation);
+        const float volumePerDegree = 40.0f / 180.0f;
 
-    float volume =
-        minVolume + rotationProportion * (maxVolume - minVolume);
+        const float volume = std::clamp(
+            sound_.getVolume() + rotationChange * volumePerDegree,
+            0.0f,
+            40.0f);
 
-    sound_.setVolume(volume);
+        sound_.setVolume(volume);
+    }
+
+    previousRotation_ = rotation;
+    hasPreviousRotation_ = true;
 
     // Starta bara om ljudet inte redan spelas.
     if (sound_.getStatus() != sf::SoundSource::Status::Playing)

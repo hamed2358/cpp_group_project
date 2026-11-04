@@ -30,4 +30,6 @@ private:
 
     // Assignment 2: no input has been processed yet.
     StopReason stopReason_ = StopReason::NotStarted;
+    float previousRotation_ = 0.0f;
+    bool hasPreviousRotation_ = false;
 };

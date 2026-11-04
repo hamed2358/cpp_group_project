@@ -14,7 +14,7 @@ struct AudioControlInput
     // 0 = markören upprätt.
     // Positivt = medurs i kamerans ospeglade bild.
     // Negativt = moturs.
-    // Ljuddelen använder -90 till +90 för volymstyrningen.
+    // Ljuddelen använder förändringen mellan giltiga vinklar för volymstyrningen.
     float rotationDegrees = 0.0f;
 };
 inline float normalizeRotationDegrees(float degrees)
