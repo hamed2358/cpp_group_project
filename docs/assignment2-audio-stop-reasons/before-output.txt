@@ -1,0 +1,42 @@
+Rotation normalization checks passed.
+1. Nara: ljus ton.
+[Audio] status=Playing, pitch=2, volume=20
+2. Langt bort: mork ton.
+[Audio] status=Playing, pitch=0.5, volume=20
+3. Under avstandsgransen: samma ton som test 1.
+[Audio] status=Playing, pitch=2, volume=20
+4. Over avstandsgransen: samma ton som test 2.
+[Audio] status=Playing, pitch=0.5, volume=20
+5. Rotation -90: tyst.
+[Audio] status=Playing, pitch=1.4375, volume=0
+6. Rotation 0: volym 20.
+[Audio] status=Playing, pitch=1.4375, volume=20
+7. Rotation +90: volym 40.
+[Audio] status=Playing, pitch=1.4375, volume=40
+8. Rotation +120: samma volym som test 7.
+[Audio] status=Playing, pitch=1.4375, volume=40
+9. Rotation -120: tyst.
+[Audio] status=Playing, pitch=1.4375, volume=0
+10. Giltiga varden igen: ljud.
+[Audio] status=Playing, pitch=1.4375, volume=20
+11. Markoren saknas: tyst.
+[Audio] status=Stopped, pitch=1.4375, volume=20
+12. Markoren kommer tillbaka: ljud.
+[Audio] status=Playing, pitch=1.4375, volume=20
+13. Avstand 0: tyst.
+[Audio] status=Stopped, pitch=1.4375, volume=20
+14. Negativt avstand: tyst.
+[Audio] status=Stopped, pitch=1.4375, volume=20
+15. Avstand NaN: tyst.
+[Audio] status=Stopped, pitch=1.4375, volume=20
+16. Oandligt avstand: tyst.
+[Audio] status=Stopped, pitch=1.4375, volume=20
+17. Giltiga varden efter felen: ljud.
+[Audio] status=Playing, pitch=1.4375, volume=20
+18. Rotation NaN: tyst.
+[Audio] status=Stopped, pitch=1.4375, volume=20
+19. Oandlig rotation: tyst.
+[Audio] status=Stopped, pitch=1.4375, volume=20
+20. Giltiga varden igen: ljud.
+[Audio] status=Playing, pitch=1.4375, volume=20
+Testsekvens avslutad. Kontrollera utfallet manuellt.

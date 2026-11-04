@@ -1,0 +1,9 @@
+[ 25%] Linking CXX executable camera_grab
+Undefined symbols for architecture arm64:
+  "MarkerRecognizer::processMarker(cv::Mat const&, std::__1::vector<cv::Point_<int>, std::__1::allocator<cv::Point_<int>>> const&)", referenced from:
+      _main in main.cpp.o
+ld: symbol(s) not found for architecture arm64
+clang++: error: linker command failed with exit code 1 (use -v to see invocation)
+make[2]: *** [camera_grab] Error 1
+make[1]: *** [CMakeFiles/camera_grab.dir/all] Error 2
+make: *** [all] Error 2
