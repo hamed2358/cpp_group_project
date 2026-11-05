@@ -8,24 +8,38 @@ find_package(OpenCV REQUIRED)
 find_package(SFML 3 REQUIRED COMPONENTS Audio)
 
 add_executable(camera_grab
-    main.cpp
-    CameraInput.cpp
-    MarkerDetector.cpp
-    MarkerRecognizer.cpp
-    PoseEstimator.cpp
-    AudioController.cpp
+    src/main.cpp
+    src/CameraInput.cpp
+    src/MarkerDetector.cpp
+    src/MarkerRecognizer.cpp
+    src/PoseEstimator.cpp
+    src/AudioController.cpp
 )
 
 target_include_directories(camera_grab PRIVATE ${OpenCV_INCLUDE_DIRS})
 target_link_libraries(camera_grab PRIVATE ${OpenCV_LIBS} SFML::Audio)
 
-add_executable(audio_test
-    audio_test.cpp
-    AudioController.cpp
+add_executable(test_audio_stop_reasons
+    tests/test_audio_stop_reasons.cpp
+    src/AudioController.cpp
 )
 
-target_link_libraries(audio_test PRIVATE SFML::Audio)
+target_include_directories(test_audio_stop_reasons PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
 
+target_link_libraries(test_audio_stop_reasons PRIVATE SFML::Audio)
+
+enable_testing()
+add_test(NAME audio_stop_reasons COMMAND test_audio_stop_reasons)
+
+add_executable(audio_test
+    tests/audio_test.cpp
+    src/AudioController.cpp
+)
+
+target_include_directories(audio_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_link_libraries(audio_test PRIVATE SFML::Audio)
 
 # OpenCV 5 requires separate geometry declarations.
 # Apply this only to the camera program.
