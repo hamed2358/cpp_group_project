@@ -37,6 +37,52 @@ Investigated and improved the integration between MarkerDetector and MarkerRecog
 Branch: assignment2/marker-recognizer-integration  
 Pull Request: https://github.com/hamed2358/cpp_group_project/pull/11
 
+
+
+
+
+## Jonathan Sleight 
+
+## MarkerRecognizer
+
+Files:
+
+- MarkerRecognizer.hpp
+- MarkerRecognizer.cpp
+
+Responsible for recognising the marker, normalizing its perspective, and determining its identity and angle relative to the camera.
+
+Branch: feature/marker-recognizer
+
+Pull Request: https://github.com/hamed2358/cpp_group_project/pull/8
+
+# Assignment 2 – MarkerDetector improvement
+Files:
+
+- MarkerDetector.cpp
+
+Fixed threshold, contour and now finds the best square instead of latest shape with 4 corners
+
+Branch: marker-detector-improvement
+
+Pull Request: https://github.com/hamed2358/cpp_group_project/pull/13
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Ali Akartei
 
 ### AudioController
@@ -84,3 +130,6 @@ and OpenCV build compatibility using reproducible before-and-after tests.
 
 Branch: assignment2/audio-stop-reasons
 Pull Request: https://github.com/hamed2358/cpp_group_project/pull/12
+
+
+
