@@ -10,6 +10,7 @@ find_package(SFML 3 REQUIRED COMPONENTS Audio)
 add_executable(camera_grab
     src/main.cpp
     src/CameraInput.cpp
+    src/CameraCalibration.cpp
     src/MarkerDetector.cpp
     src/MarkerRecognizer.cpp
     src/PoseEstimator.cpp
