@@ -14,7 +14,7 @@
 
 int main()
 {
-
+   // Initialize the components
     try
     {
         const double markerSize = 0.043;
@@ -28,7 +28,7 @@ int main()
         PoseEstimator poseEstimator(
             calibration.getCameraMatrix(),
             calibration.getDistortionCoefficients());
-
+         // Open the camera
         if (!camera.openCamera(0))
         {
             std::cerr << "Could not open camera.\n";
@@ -38,10 +38,10 @@ int main()
         AudioController audio;
         cv::Mat frame;
         bool markerWasVisible = false;
-
+        // Read and process camera frames
         while (camera.readFrame(frame))
         {
-            // Grundläget är ingen giltig markör: ljudet ska stoppas.
+            // Start with no visible marker
             AudioControlInput input;
 
             cv::Mat processedFrame = detector.processFrame(frame);
@@ -56,23 +56,24 @@ int main()
                     if (marker.isDetected &&
                         marker.corners.size() == 4)
                     {
-                        // Estimate pose using the corners from MarkerRecognizer.
+                        // Calculate the marker position
                         const auto pose = poseEstimator.estimatePoseFromScaledCorners(
                             marker.corners, markerSize);
 
                         if (pose)
                         {
-                            // Använd den befintliga avståndsberäkning.
+                            // Calculate the distance to the marker
                             input.distanceMeters =
                                 static_cast<float>(
                                     poseEstimator.distanceToMarker(*pose));
 
-                            // Använd Recognizers vinkel för volymen.
+                             // Get the marker rotation for volume control
                             input.rotationDegrees =
                                 normalizeRotationDegrees(
                                     static_cast<float>(marker.outAngle));
 
                             input.visible = true;
+                             
                             std::cout << "Vinkel: " << input.rotationDegrees << "°\n";
                             markerWasVisible = true;
                         }
@@ -80,22 +81,23 @@ int main()
                 }
                 catch (const cv::Exception &error)
                 {
-                    // input behåller grundläget och ljudet stoppas.
+                     // Keep the marker invisible if processing fails
                     std::cerr << "Marker/pose processing failed: "
                               << error.what() << '\n';
                 }
             }
 
-            // AudioController sköter validering och ljudstyrning.
+            // Update the sound based on marker data
             audio.update(input);
             if (!input.visible && markerWasVisible)
             {
                 std::cout << "No marker detected.\n";
                 markerWasVisible = false;
             }
-
+               // Show the camera frame
             cv::imshow("MarkerDetector debug", processedFrame);
 
+            // Press Esc to exit
             if (cv::waitKey(20) == 27)
             {
                 break;
