@@ -1,7 +1,6 @@
 /*
 Component: PoseEstimator
 Primary owner: Abdulmajid
-Checkpoint: [Checkpoint]
 Responsibility: Estimate the marker's 3D position and distance from the camera.
 Main contributions: Position estimation using marker corners and camera calibration, and distance calculation.
 */
@@ -9,7 +8,7 @@ Main contributions: Position estimation using marker corners and camera calibrat
 #include "PoseEstimator.hpp"
 #include <cmath>
 
-// Skapar PoseEstimator och kopierar kamerans kalibreringsdata.
+// Initializes PoseEstimator and copies the camera calibration data.
 PoseEstimator::PoseEstimator(const cv::Mat &cameraMatrix,
                              const cv::Mat &distortionCoefficients)
 {
@@ -17,22 +16,22 @@ PoseEstimator::PoseEstimator(const cv::Mat &cameraMatrix,
     distortionCoefficients_ = distortionCoefficients.clone();
 }
 
-// Försöker beräkna markerns 3D-position relativt kameran.
-// Returnerar std::nullopt vid fel antal hörn, ogiltig markörstorlek
-// eller om solvePnP returnerar false.
-// Förutsätter giltig kalibrering och giltiga bildhörn.
+// Estimates the marker's 3D position relative to the camera.
+// Returns std::nullopt if the number of corners or marker size is invalid,
+// or if solvePnP fails.
+// Assumes valid camera calibration and image corner coordinates.
 std::optional<Pose> PoseEstimator::estimatePose(
     const std::vector<cv::Point2f> &imageCorners,
     double markerSize) const
 {
-    // En fyrkantig markör måste ha exakt fyra hörn.
+    // A square marker must have exactly four corners.
     if (imageCorners.size() != 4)
     {
         return std::nullopt;
     }
 
-    // Markörens sidlängd ska vara ändlig och större än noll.
-    // Storleken anges i meter.
+    // The marker size must be finite and greater than zero.
+    // The size is specified in metres.
     if (!std::isfinite(markerSize) || markerSize <= 0.0)
     {
         return std::nullopt;
@@ -40,20 +39,20 @@ std::optional<Pose> PoseEstimator::estimatePose(
 
     double halfSize = markerSize / 2.0;
 
-    // Markörens hörn i dess egna 3D-koordinatsystem.
-    // Centrum ligger i (0, 0, 0) och markören är platt.
-    // Bildhörnen måste motsvara dessa punkter i samma ordning.
+    // Define the marker corners in its local 3D coordinate system.
+    // The marker is flat and centered at (0, 0, 0).
+    // Image corners must follow the same order as these object points.
     std::vector<cv::Point3f> objectPoints = {
         cv::Point3f(-halfSize, halfSize, 0.0),
         cv::Point3f(halfSize, halfSize, 0.0),
         cv::Point3f(halfSize, -halfSize, 0.0),
         cv::Point3f(-halfSize, -halfSize, 0.0)};
 
-    // solvePnP behöver beräkna rotation internt.
-    // D omvandlar den inte till grader och returnerar den inte.
+    // solvePnP calculates the rotation internally.
+    // The rotation is not converted to degrees or returned.
     cv::Vec3d rotationVector;
 
-    // Markörens centrum relativt kameran.
+    // Stores the marker center position relative to the camera.
     cv::Vec3d translationVector;
 
     bool success = cv::solvePnP(
@@ -69,14 +68,43 @@ std::optional<Pose> PoseEstimator::estimatePose(
         return std::nullopt;
     }
 
-    // Positionen får samma längdenhet som markerSize: meter.
+    // The position uses the same unit as markerSize: metres.
     Pose pose;
     pose.position = translationVector;
 
     return pose;
 }
 
-// Beräknar det raka 3D-avståndet till markörens centrum i meter.
+// Restores the original marker corners before estimating its 3D position.
+std::optional<Pose> PoseEstimator::estimatePoseFromScaledCorners(
+    const std::vector<cv::Point2f> &scaledCorners,
+    double markerSize) const
+{
+    // A square marker must have exactly four corners.
+    if (scaledCorners.size() != 4)
+    {
+        return std::nullopt;
+    }
+
+    std::vector<cv::Point2f> corners = scaledCorners;
+
+    // Calculate the center of the marker.
+    const cv::Point2f center =
+        (corners[0] + corners[1] +
+         corners[2] + corners[3]) *
+        0.25f;
+
+    // Reverse the scaling applied by MarkerRecognizer.
+    for (auto &corner : corners)
+    {
+        corner = center + (corner - center) / 1.5f;
+    }
+
+    // Estimate the pose using the original corner positions.
+    return estimatePose(corners, markerSize);
+}
+
+// Calculates the straight-line 3D distance to the marker center in metres.
 double PoseEstimator::distanceToMarker(const Pose &pose) const
 {
     double x = pose.position[0];
