@@ -54,7 +54,8 @@ int main(int argc, char *argv[])
         }
 
         AudioController audio;
-        cv::Mat frame;
+        cv::Mat frame; 
+        bool markerWasVisible = false;
 
         while (camera.readFrame(frame))
         {
@@ -90,6 +91,8 @@ int main(int argc, char *argv[])
                                     static_cast<float>(marker.outAngle));
 
                             input.visible = true;
+                              std::cout << "Vinkel: " << input.rotationDegrees << "°\n";
+                              markerWasVisible = true; 
                         }
                     }
                 }
@@ -103,6 +106,11 @@ int main(int argc, char *argv[])
 
             // AudioController sköter validering och ljudstyrning.
             audio.update(input);
+                if (!input.visible && markerWasVisible)
+                  {
+                    std::cout << "No marker detected.\n";
+                     markerWasVisible = false;
+                  }
 
             cv::imshow("MarkerDetector debug", processedFrame);
 

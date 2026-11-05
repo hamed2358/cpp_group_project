@@ -123,12 +123,13 @@ MarkerData MarkerRecognizer::processMarker(const cv::Mat& frame, const std::vect
 
             double whiteBrightness1 = cv::mean(currentRotation(whiteCell1Rect))[0];
             double whiteBrightness2 = cv::mean(currentRotation(whiteCell2Rect))[0];
-            std::cout << "rotation: " << i
+            /*std::cout << "rotation: " << i
             << " brightness1: " << brightness1
             << " brightness2: " << brightness2
             << " whiteBrightness1: " << whiteBrightness1
             << " whiteBrightness2: " << whiteBrightness2
             << std::endl;
+            */
 
           
             
@@ -145,11 +146,12 @@ MarkerData MarkerRecognizer::processMarker(const cv::Mat& frame, const std::vect
         }
     // if our marker then add the values
     if (foundValid) {
-        std::cout << "bestRotationIdx: " << bestRotationIdx << std::endl;
+       /* std::cout << "bestRotationIdx: " << bestRotationIdx << std::endl;
 
         std::cout << "rawAngle: " << data.outAngle
           << " edgeTilt: " << edgeTilt
-          << " markerAngle: " << markerAngles[bestRotationIdx] << std::endl;
+          << " markerAngle: " << markerAngles[bestRotationIdx] << std::endl; 
+          */
     
         
         data.outAngle = markerAngles[bestRotationIdx] + edgeTilt ;
