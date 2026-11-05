@@ -12,30 +12,12 @@
 #include "PoseEstimator.hpp"
 #include "AudioController.hpp"
 
-int main(int argc, char *argv[])
+int main()
 {
-    if (argc != 2)
-    {
-        std::cerr << "Usage: " << argv[0]
-                  << " <marker_size_m>\n";
-        return 1;
-    }
 
     try
     {
-        // Läs markörens verkliga sidlängd i meter.
-        const std::string sizeText = argv[1];
-        std::size_t parsed = 0;
-        const double markerSize = std::stod(sizeText, &parsed);
-
-        if (parsed != sizeText.size() ||
-            !std::isfinite(markerSize) ||
-            markerSize <= 0.0)
-        {
-            std::cerr
-                << "Marker size must be a positive finite number in metres.\n";
-            return 1;
-        }
+        const double markerSize = 0.043;
 
         // Initialize the components.
         CameraCalibration calibration;
@@ -54,7 +36,7 @@ int main(int argc, char *argv[])
         }
 
         AudioController audio;
-        cv::Mat frame; 
+        cv::Mat frame;
         bool markerWasVisible = false;
 
         while (camera.readFrame(frame))
@@ -91,8 +73,8 @@ int main(int argc, char *argv[])
                                     static_cast<float>(marker.outAngle));
 
                             input.visible = true;
-                              std::cout << "Vinkel: " << input.rotationDegrees << "°\n";
-                              markerWasVisible = true; 
+                            std::cout << "Vinkel: " << input.rotationDegrees << "°\n";
+                            markerWasVisible = true;
                         }
                     }
                 }
@@ -106,11 +88,11 @@ int main(int argc, char *argv[])
 
             // AudioController sköter validering och ljudstyrning.
             audio.update(input);
-                if (!input.visible && markerWasVisible)
-                  {
-                    std::cout << "No marker detected.\n";
-                     markerWasVisible = false;
-                  }
+            if (!input.visible && markerWasVisible)
+            {
+                std::cout << "No marker detected.\n";
+                markerWasVisible = false;
+            }
 
             cv::imshow("MarkerDetector debug", processedFrame);
 
