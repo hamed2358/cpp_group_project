@@ -1,8 +1,7 @@
 #pragma once
 #include <opencv2/opencv.hpp>
 
-//Handlas the camera input for the project 
-//It opens a camera and provides frames that can be used by other components. 
+// Handles camera input and reads frames
 class CameraInput
 {
     public:
